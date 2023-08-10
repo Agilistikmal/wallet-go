@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"github.com/agilistikmal/wallet-go/handler"
 	"github.com/agilistikmal/wallet-go/helper"
 	"github.com/agilistikmal/wallet-go/model"
 	"github.com/agilistikmal/wallet-go/repository"
@@ -69,7 +70,7 @@ func (service *UserServiceImpl) Update(ctx context.Context, request model.UserMo
 
 	user, err := service.UserRepository.FindById(ctx, tx, request.Id)
 	if err != nil {
-		panic(err)
+		panic(handler.NewNotFoundError(err.Error()))
 	}
 	user = model.UserModel{
 		Id:           user.Id,
@@ -94,7 +95,7 @@ func (service *UserServiceImpl) Delete(ctx context.Context, userId uint) {
 
 	user, err := service.UserRepository.FindById(ctx, tx, userId)
 	if err != nil {
-		panic(err)
+		panic(handler.NewNotFoundError(err.Error()))
 	}
 	service.UserRepository.Delete(ctx, tx, user)
 }
@@ -108,7 +109,7 @@ func (service *UserServiceImpl) FindById(ctx context.Context, userId uint) model
 
 	user, err := service.UserRepository.FindById(ctx, tx, userId)
 	if err != nil {
-		panic(err)
+		panic(handler.NewNotFoundError(err.Error()))
 	}
 	return helper.UserModelToUserModelResponse(user)
 }

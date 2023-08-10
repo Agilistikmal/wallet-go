@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/agilistikmal/wallet-go/controller"
 	"github.com/agilistikmal/wallet-go/database"
+	"github.com/agilistikmal/wallet-go/handler"
 	"github.com/agilistikmal/wallet-go/repository"
 	"github.com/agilistikmal/wallet-go/service"
 	"github.com/go-playground/validator"
@@ -24,6 +25,8 @@ func main() {
 	router.POST("/api/user", userController.Create)
 	router.PUT("/api/user/:userId", userController.Update)
 	router.DELETE("/api/user/:userId", userController.Delete)
+
+	router.PanicHandler = handler.ErrorHandler
 
 	server := http.Server{
 		Addr:    "localhost:8080",
