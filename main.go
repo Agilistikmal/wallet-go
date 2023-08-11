@@ -39,9 +39,10 @@ func main() {
 		Addr:    "localhost:8080",
 		Handler: router,
 	}
+	println("* Wallet Go")
+	println("* Running on localhost:8080")
 	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
-	println("* Running on localhost:8080")
 }
