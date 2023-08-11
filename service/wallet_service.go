@@ -28,7 +28,7 @@ func NewWalletService(walletRepository repository.WalletRepository, userReposito
 func (service *WalletServiceImpl) Update(ctx context.Context, request model.Wallet) model.Wallet {
 	err := service.Validate.Struct(request)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 
 	tx, err := service.DB.Begin()

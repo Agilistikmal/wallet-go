@@ -35,7 +35,7 @@ func NewUserService(userRepository repository.UserRepository, DB *sql.DB, valida
 func (service *UserServiceImpl) Create(ctx context.Context, request model.UserCreateRequest) model.UserResponse {
 	err := service.Validate.Struct(request)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 
 	tx, err := service.DB.Begin()
@@ -59,7 +59,7 @@ func (service *UserServiceImpl) Create(ctx context.Context, request model.UserCr
 func (service *UserServiceImpl) Update(ctx context.Context, request model.UserUpdateRequest) model.UserResponse {
 	err := service.Validate.Struct(request)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 
 	tx, err := service.DB.Begin()
