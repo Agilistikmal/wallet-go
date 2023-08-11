@@ -12,8 +12,8 @@ func UserToUserResponse(user model.User) model.UserResponse {
 	}
 }
 
-func WalletToWalletResponse(user model.User) model.WalletResponse {
-	return model.WalletResponse{
+func UserToWallet(user model.User) model.Wallet {
+	return model.Wallet{
 		UserId: user.Id,
 		Amount: user.WalletAmount,
 	}

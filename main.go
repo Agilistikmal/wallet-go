@@ -15,9 +15,15 @@ import (
 func main() {
 	db := database.New()
 	validate := validator.New()
+
 	userRepository := repository.NewUserRepository()
 	userService := service.NewUserService(userRepository, db, validate)
 	userController := controller.NewUserController(userService)
+
+	walletRepository := repository.NewWalletRepository()
+	walletService := service.NewWalletService(walletRepository, userRepository, db, validate)
+	walletController := controller.NewWalletController(walletService)
+
 	router := httprouter.New()
 
 	router.GET("/api/user", userController.FindAll)
@@ -25,7 +31,7 @@ func main() {
 	router.POST("/api/user", userController.Create)
 	router.PUT("/api/user/:userId", userController.Update)
 	router.DELETE("/api/user/:userId", userController.Delete)
-	router.PUT("/api/wallet/:userId", userController.UpdateWallet)
+	router.PUT("/api/wallet/:userId", walletController.Update)
 
 	router.PanicHandler = handler.ErrorHandler
 

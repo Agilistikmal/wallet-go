@@ -15,7 +15,6 @@ type UserController interface {
 	Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 	FindById(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 	FindAll(w http.ResponseWriter, r *http.Request, params httprouter.Params)
-	UpdateWallet(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 }
 
 func NewUserController(userService service.UserService) UserController {
@@ -100,27 +99,6 @@ func (controller *UserControllerImpl) FindAll(w http.ResponseWriter, r *http.Req
 		Code:   http.StatusOK,
 		Status: http.StatusText(http.StatusOK),
 		Data:   userResponses,
-	}
-
-	helper.WriteToResponse(w, webResponse)
-}
-
-func (controller *UserControllerImpl) UpdateWallet(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	walletUpdateRequest := model.WalletUpdateRequest{}
-	helper.ReadFromRequest(r, &walletUpdateRequest)
-
-	userId := params.ByName("userId")
-	id, err := strconv.Atoi(userId)
-	if err != nil {
-		panic(err)
-	}
-	walletUpdateRequest.UserId = uint(id)
-
-	walletResponse := controller.UserService.UpdateWallet(r.Context(), walletUpdateRequest)
-	webResponse := model.WebResponse{
-		Code:   http.StatusOK,
-		Status: http.StatusText(http.StatusOK),
-		Data:   walletResponse,
 	}
 
 	helper.WriteToResponse(w, webResponse)

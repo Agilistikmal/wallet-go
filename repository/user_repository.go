@@ -13,7 +13,6 @@ type UserRepository interface {
 	Delete(ctx context.Context, tx *sql.Tx, user model.User)
 	FindById(ctx context.Context, tx *sql.Tx, userId uint) (model.User, error)
 	FindAll(ctx context.Context, tx *sql.Tx) []model.User
-	UpdateWallet(ctx context.Context, tx *sql.Tx, user model.User) model.User
 }
 
 type UserRepositoryImpl struct {
@@ -92,13 +91,4 @@ func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) [
 		users = append(users, user)
 	}
 	return users
-}
-
-func (repository *UserRepositoryImpl) UpdateWallet(ctx context.Context, tx *sql.Tx, user model.User) model.User {
-	SQL := "UPDATE user SET wallet_amount = ? WHERE id = ?"
-	_, err := tx.Exec(SQL, user.WalletAmount, user.Id)
-	if err != nil {
-		panic(err)
-	}
-	return user
 }

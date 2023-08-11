@@ -16,7 +16,6 @@ type UserService interface {
 	Delete(ctx context.Context, userId uint)
 	FindById(ctx context.Context, userId uint) model.UserResponse
 	FindAll(ctx context.Context) []model.UserResponse
-	UpdateWallet(ctx context.Context, request model.WalletUpdateRequest) model.WalletResponse
 }
 
 type UserServiceImpl struct {
@@ -128,27 +127,4 @@ func (service *UserServiceImpl) FindAll(ctx context.Context) []model.UserRespons
 		userResponses = append(userResponses, helper.UserToUserResponse(user))
 	}
 	return userResponses
-}
-
-func (service *UserServiceImpl) UpdateWallet(ctx context.Context, request model.WalletUpdateRequest) model.WalletResponse {
-	err := service.Validate.Struct(request)
-	if err != nil {
-		panic(err)
-	}
-
-	tx, err := service.DB.Begin()
-	if err != nil {
-		panic(err)
-	}
-	defer helper.TxCommitOrRollback(tx)
-
-	user, err := service.UserRepository.FindById(ctx, tx, request.UserId)
-	if err != nil {
-		panic(handler.NewNotFoundError(err.Error()))
-	}
-	user.WalletAmount = request.Amount
-
-	user = service.UserRepository.UpdateWallet(ctx, tx, user)
-
-	return helper.WalletToWalletResponse(user)
 }
