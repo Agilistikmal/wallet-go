@@ -25,6 +25,7 @@ func main() {
 	router.POST("/api/user", userController.Create)
 	router.PUT("/api/user/:userId", userController.Update)
 	router.DELETE("/api/user/:userId", userController.Delete)
+	router.PUT("/api/wallet/:userId", userController.UpdateWallet)
 
 	router.PanicHandler = handler.ErrorHandler
 

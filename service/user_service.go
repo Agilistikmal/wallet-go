@@ -11,11 +11,12 @@ import (
 )
 
 type UserService interface {
-	Create(ctx context.Context, request model.UserModelCreateRequest) model.UserModelResponse
-	Update(ctx context.Context, request model.UserModelUpdateRequest) model.UserModelResponse
+	Create(ctx context.Context, request model.UserCreateRequest) model.UserResponse
+	Update(ctx context.Context, request model.UserUpdateRequest) model.UserResponse
 	Delete(ctx context.Context, userId uint)
-	FindById(ctx context.Context, userId uint) model.UserModelResponse
-	FindAll(ctx context.Context) []model.UserModelResponse
+	FindById(ctx context.Context, userId uint) model.UserResponse
+	FindAll(ctx context.Context) []model.UserResponse
+	UpdateWallet(ctx context.Context, request model.WalletUpdateRequest) model.WalletResponse
 }
 
 type UserServiceImpl struct {
@@ -32,7 +33,7 @@ func NewUserService(userRepository repository.UserRepository, DB *sql.DB, valida
 	}
 }
 
-func (service *UserServiceImpl) Create(ctx context.Context, request model.UserModelCreateRequest) model.UserModelResponse {
+func (service *UserServiceImpl) Create(ctx context.Context, request model.UserCreateRequest) model.UserResponse {
 	err := service.Validate.Struct(request)
 	if err != nil {
 		panic(err)
@@ -44,7 +45,7 @@ func (service *UserServiceImpl) Create(ctx context.Context, request model.UserMo
 	}
 	defer helper.TxCommitOrRollback(tx)
 
-	user := model.UserModel{
+	user := model.User{
 		Name:     request.Name,
 		Email:    request.Email,
 		Phone:    request.Phone,
@@ -53,10 +54,10 @@ func (service *UserServiceImpl) Create(ctx context.Context, request model.UserMo
 
 	user = service.UserRepository.Create(ctx, tx, user)
 
-	return helper.UserModelToUserModelResponse(user)
+	return helper.UserToUserResponse(user)
 }
 
-func (service *UserServiceImpl) Update(ctx context.Context, request model.UserModelUpdateRequest) model.UserModelResponse {
+func (service *UserServiceImpl) Update(ctx context.Context, request model.UserUpdateRequest) model.UserResponse {
 	err := service.Validate.Struct(request)
 	if err != nil {
 		panic(err)
@@ -72,18 +73,17 @@ func (service *UserServiceImpl) Update(ctx context.Context, request model.UserMo
 	if err != nil {
 		panic(handler.NewNotFoundError(err.Error()))
 	}
-	user = model.UserModel{
-		Id:           user.Id,
-		Name:         request.Name,
-		Email:        request.Email,
-		Phone:        request.Phone,
-		Password:     request.Password,
-		WalletAmount: request.WalletAmount,
+	user = model.User{
+		Id:       user.Id,
+		Name:     request.Name,
+		Email:    request.Email,
+		Phone:    request.Phone,
+		Password: request.Password,
 	}
 
 	user = service.UserRepository.Update(ctx, tx, user)
 
-	return helper.UserModelToUserModelResponse(user)
+	return helper.UserToUserResponse(user)
 }
 
 func (service *UserServiceImpl) Delete(ctx context.Context, userId uint) {
@@ -100,7 +100,7 @@ func (service *UserServiceImpl) Delete(ctx context.Context, userId uint) {
 	service.UserRepository.Delete(ctx, tx, user)
 }
 
-func (service *UserServiceImpl) FindById(ctx context.Context, userId uint) model.UserModelResponse {
+func (service *UserServiceImpl) FindById(ctx context.Context, userId uint) model.UserResponse {
 	tx, err := service.DB.Begin()
 	if err != nil {
 		panic(err)
@@ -111,10 +111,10 @@ func (service *UserServiceImpl) FindById(ctx context.Context, userId uint) model
 	if err != nil {
 		panic(handler.NewNotFoundError(err.Error()))
 	}
-	return helper.UserModelToUserModelResponse(user)
+	return helper.UserToUserResponse(user)
 }
 
-func (service *UserServiceImpl) FindAll(ctx context.Context) []model.UserModelResponse {
+func (service *UserServiceImpl) FindAll(ctx context.Context) []model.UserResponse {
 	tx, err := service.DB.Begin()
 	if err != nil {
 		panic(err)
@@ -123,9 +123,32 @@ func (service *UserServiceImpl) FindAll(ctx context.Context) []model.UserModelRe
 
 	users := service.UserRepository.FindAll(ctx, tx)
 
-	var userResponses []model.UserModelResponse
+	var userResponses []model.UserResponse
 	for _, user := range users {
-		userResponses = append(userResponses, helper.UserModelToUserModelResponse(user))
+		userResponses = append(userResponses, helper.UserToUserResponse(user))
 	}
 	return userResponses
+}
+
+func (service *UserServiceImpl) UpdateWallet(ctx context.Context, request model.WalletUpdateRequest) model.WalletResponse {
+	err := service.Validate.Struct(request)
+	if err != nil {
+		panic(err)
+	}
+
+	tx, err := service.DB.Begin()
+	if err != nil {
+		panic(err)
+	}
+	defer helper.TxCommitOrRollback(tx)
+
+	user, err := service.UserRepository.FindById(ctx, tx, request.UserId)
+	if err != nil {
+		panic(handler.NewNotFoundError(err.Error()))
+	}
+	user.WalletAmount = request.Amount
+
+	user = service.UserRepository.UpdateWallet(ctx, tx, user)
+
+	return helper.WalletToWalletResponse(user)
 }

@@ -15,6 +15,7 @@ type UserController interface {
 	Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 	FindById(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 	FindAll(w http.ResponseWriter, r *http.Request, params httprouter.Params)
+	UpdateWallet(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 }
 
 func NewUserController(userService service.UserService) UserController {
@@ -28,11 +29,11 @@ type UserControllerImpl struct {
 }
 
 func (controller *UserControllerImpl) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userModelCreateRequest := model.UserModelCreateRequest{}
-	helper.ReadFromRequest(r, &userModelCreateRequest)
+	userCreateRequest := model.UserCreateRequest{}
+	helper.ReadFromRequest(r, &userCreateRequest)
 
-	userResponse := controller.UserService.Create(r.Context(), userModelCreateRequest)
-	webResponse := model.WebModelResponse{
+	userResponse := controller.UserService.Create(r.Context(), userCreateRequest)
+	webResponse := model.WebResponse{
 		Code:   http.StatusOK,
 		Status: http.StatusText(http.StatusOK),
 		Data:   userResponse,
@@ -42,17 +43,17 @@ func (controller *UserControllerImpl) Create(w http.ResponseWriter, r *http.Requ
 }
 
 func (controller *UserControllerImpl) Update(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userModelUpdateRequest := model.UserModelUpdateRequest{}
-	helper.ReadFromRequest(r, &userModelUpdateRequest)
+	userUpdateRequest := model.UserUpdateRequest{}
+	helper.ReadFromRequest(r, &userUpdateRequest)
 
 	userId := params.ByName("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
 		panic(err)
 	}
-	userModelUpdateRequest.Id = uint(id)
-	userResponse := controller.UserService.Update(r.Context(), userModelUpdateRequest)
-	webResponse := model.WebModelResponse{
+	userUpdateRequest.Id = uint(id)
+	userResponse := controller.UserService.Update(r.Context(), userUpdateRequest)
+	webResponse := model.WebResponse{
 		Code:   http.StatusOK,
 		Status: http.StatusText(http.StatusOK),
 		Data:   userResponse,
@@ -68,7 +69,7 @@ func (controller *UserControllerImpl) Delete(w http.ResponseWriter, r *http.Requ
 		panic(err)
 	}
 	controller.UserService.Delete(r.Context(), uint(id))
-	webResponse := model.WebModelResponse{
+	webResponse := model.WebResponse{
 		Code:   http.StatusOK,
 		Status: http.StatusText(http.StatusOK),
 		Data:   nil,
@@ -84,7 +85,7 @@ func (controller *UserControllerImpl) FindById(w http.ResponseWriter, r *http.Re
 		panic(err)
 	}
 	userResponse := controller.UserService.FindById(r.Context(), uint(id))
-	webResponse := model.WebModelResponse{
+	webResponse := model.WebResponse{
 		Code:   http.StatusOK,
 		Status: http.StatusText(http.StatusOK),
 		Data:   userResponse,
@@ -95,10 +96,31 @@ func (controller *UserControllerImpl) FindById(w http.ResponseWriter, r *http.Re
 
 func (controller *UserControllerImpl) FindAll(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	userResponses := controller.UserService.FindAll(r.Context())
-	webResponse := model.WebModelResponse{
+	webResponse := model.WebResponse{
 		Code:   http.StatusOK,
 		Status: http.StatusText(http.StatusOK),
 		Data:   userResponses,
+	}
+
+	helper.WriteToResponse(w, webResponse)
+}
+
+func (controller *UserControllerImpl) UpdateWallet(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	walletUpdateRequest := model.WalletUpdateRequest{}
+	helper.ReadFromRequest(r, &walletUpdateRequest)
+
+	userId := params.ByName("userId")
+	id, err := strconv.Atoi(userId)
+	if err != nil {
+		panic(err)
+	}
+	walletUpdateRequest.UserId = uint(id)
+
+	walletResponse := controller.UserService.UpdateWallet(r.Context(), walletUpdateRequest)
+	webResponse := model.WebResponse{
+		Code:   http.StatusOK,
+		Status: http.StatusText(http.StatusOK),
+		Data:   walletResponse,
 	}
 
 	helper.WriteToResponse(w, webResponse)

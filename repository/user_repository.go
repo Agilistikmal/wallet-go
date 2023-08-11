@@ -8,11 +8,12 @@ import (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, tx *sql.Tx, user model.UserModel) model.UserModel
-	Update(ctx context.Context, tx *sql.Tx, user model.UserModel) model.UserModel
-	Delete(ctx context.Context, tx *sql.Tx, user model.UserModel)
-	FindById(ctx context.Context, tx *sql.Tx, userId uint) (model.UserModel, error)
-	FindAll(ctx context.Context, tx *sql.Tx) []model.UserModel
+	Create(ctx context.Context, tx *sql.Tx, user model.User) model.User
+	Update(ctx context.Context, tx *sql.Tx, user model.User) model.User
+	Delete(ctx context.Context, tx *sql.Tx, user model.User)
+	FindById(ctx context.Context, tx *sql.Tx, userId uint) (model.User, error)
+	FindAll(ctx context.Context, tx *sql.Tx) []model.User
+	UpdateWallet(ctx context.Context, tx *sql.Tx, user model.User) model.User
 }
 
 type UserRepositoryImpl struct {
@@ -22,7 +23,7 @@ func NewUserRepository() UserRepository {
 	return &UserRepositoryImpl{}
 }
 
-func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, user model.UserModel) model.UserModel {
+func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, user model.User) model.User {
 	SQL := "INSERT INTO user(name, email, phone, password) VALUES (?, ? ,? ,?)"
 	result, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, user.Password)
 	if err != nil {
@@ -36,16 +37,16 @@ func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, us
 	return user
 }
 
-func (repository *UserRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, user model.UserModel) model.UserModel {
-	SQL := "UPDATE user SET name = ?, email = ?, phone = ?, password = ?, wallet_amount = ?"
-	_, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, user.Password, user.WalletAmount)
+func (repository *UserRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, user model.User) model.User {
+	SQL := "UPDATE user SET name = ?, email = ?, phone = ?, password = ? WHERE id = ?"
+	_, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, user.Password, user.Id)
 	if err != nil {
 		panic(err)
 	}
 	return user
 }
 
-func (repository *UserRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, user model.UserModel) {
+func (repository *UserRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, user model.User) {
 	SQL := "DELETE FROM user WHERE id = ?"
 	_, err := tx.Exec(SQL, user.Id)
 	if err != nil {
@@ -53,7 +54,7 @@ func (repository *UserRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, us
 	}
 }
 
-func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, userId uint) (model.UserModel, error) {
+func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, userId uint) (model.User, error) {
 	SQL := "SELECT id, name, email, phone, wallet_amount FROM user WHERE id = ?"
 	rows, err := tx.QueryContext(ctx, SQL, userId)
 	if err != nil {
@@ -61,7 +62,7 @@ func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 	}
 	defer rows.Close()
 
-	user := model.UserModel{}
+	user := model.User{}
 	if rows.Next() {
 		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount)
 		if err != nil {
@@ -73,7 +74,7 @@ func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 	}
 }
 
-func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) []model.UserModel {
+func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) []model.User {
 	SQL := "SELECT id, name, email, phone, wallet_amount FROM user"
 	rows, err := tx.QueryContext(ctx, SQL)
 	if err != nil {
@@ -81,9 +82,9 @@ func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) [
 	}
 	defer rows.Close()
 
-	var users []model.UserModel
+	var users []model.User
 	for rows.Next() {
-		user := model.UserModel{}
+		user := model.User{}
 		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount)
 		if err != nil {
 			panic(err)
@@ -91,4 +92,13 @@ func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) [
 		users = append(users, user)
 	}
 	return users
+}
+
+func (repository *UserRepositoryImpl) UpdateWallet(ctx context.Context, tx *sql.Tx, user model.User) model.User {
+	SQL := "UPDATE user SET wallet_amount = ? WHERE id = ?"
+	_, err := tx.Exec(SQL, user.WalletAmount, user.Id)
+	if err != nil {
+		panic(err)
+	}
+	return user
 }

@@ -11,7 +11,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, err interface{}) {
 	exception, ok := err.(NotFoundError)
 	if ok {
 		w.WriteHeader(http.StatusNotFound)
-		response := model.WebModelResponse{
+		response := model.WebResponse{
 			Code:   http.StatusNotFound,
 			Status: http.StatusText(http.StatusNotFound),
 			Data:   exception.Error,
@@ -19,7 +19,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, err interface{}) {
 		helper.WriteToResponse(w, response)
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
-		response := model.WebModelResponse{
+		response := model.WebResponse{
 			Code:   http.StatusInternalServerError,
 			Status: http.StatusText(http.StatusInternalServerError),
 			Data:   err,
