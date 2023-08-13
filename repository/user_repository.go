@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/agilistikmal/wallet-go/helper"
 	"github.com/agilistikmal/wallet-go/model"
 )
 
@@ -23,8 +24,12 @@ func NewUserRepository() UserRepository {
 }
 
 func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, user model.User) model.User {
+	hashPassword, errHash := helper.HashPassword(user.Password)
+	if errHash != nil {
+		panic(errHash)
+	}
 	SQL := "INSERT INTO user(name, email, phone, password) VALUES (?, ? ,? ,?)"
-	result, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, user.Password)
+	result, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, hashPassword)
 	if err != nil {
 		panic(err)
 	}
