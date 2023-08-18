@@ -8,11 +8,17 @@ import (
 	"github.com/agilistikmal/wallet-go/service"
 	"github.com/go-playground/validator"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
 	db := database.New()
 	validate := validator.New()
 
@@ -41,7 +47,7 @@ func main() {
 	}
 	println("* Wallet Go")
 	println("* Running on localhost:8080")
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}

@@ -13,3 +13,8 @@ func TestCheckPassword(t *testing.T) {
 		t.Error("Wrong password")
 	}
 }
+
+func TestGenerateRandomString(t *testing.T) {
+	random := helper.GenerateRandomString(30)
+	t.Log(random)
+}

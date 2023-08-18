@@ -9,6 +9,7 @@ func UserToUserResponse(user model.User) model.UserResponse {
 		Email:        user.Email,
 		Phone:        user.Phone,
 		WalletAmount: user.WalletAmount,
+		ApiKey:       user.ApiKey,
 	}
 }
 

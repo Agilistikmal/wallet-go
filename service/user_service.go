@@ -73,11 +73,13 @@ func (service *UserServiceImpl) Update(ctx context.Context, request model.UserUp
 		panic(handler.NewNotFoundError(err.Error()))
 	}
 	user = model.User{
-		Id:       user.Id,
-		Name:     request.Name,
-		Email:    request.Email,
-		Phone:    request.Phone,
-		Password: request.Password,
+		Id:           user.Id,
+		Name:         request.Name,
+		Email:        request.Email,
+		Phone:        request.Phone,
+		Password:     request.Password,
+		WalletAmount: user.WalletAmount,
+		ApiKey:       user.ApiKey,
 	}
 
 	user = service.UserRepository.Update(ctx, tx, user)

@@ -7,6 +7,7 @@ type User struct {
 	Phone        string
 	Password     string
 	WalletAmount uint
+	ApiKey       string
 }
 
 type UserCreateRequest struct {
@@ -34,4 +35,5 @@ type UserResponse struct {
 	Email        string `json:"email"`
 	Phone        string `json:"phone"`
 	WalletAmount uint   `json:"wallet_amount"`
+	ApiKey       string `json:"api_key"`
 }

@@ -25,11 +25,12 @@ func NewUserRepository() UserRepository {
 
 func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, user model.User) model.User {
 	hashPassword, errHash := helper.HashPassword(user.Password)
+	apiKey := helper.GenerateRandomString(30)
 	if errHash != nil {
 		panic(errHash)
 	}
-	SQL := "INSERT INTO user(name, email, phone, password) VALUES (?, ? ,? ,?)"
-	result, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, hashPassword)
+	SQL := "INSERT INTO user(name, email, phone, password, api_key) VALUES (?, ? ,? ,?, ?)"
+	result, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, hashPassword, apiKey)
 	if err != nil {
 		panic(err)
 	}
@@ -38,6 +39,7 @@ func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, us
 		panic(err)
 	}
 	user.Id = uint(id)
+	user.ApiKey = apiKey
 	return user
 }
 
@@ -59,7 +61,7 @@ func (repository *UserRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, us
 }
 
 func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, userId uint) (model.User, error) {
-	SQL := "SELECT id, name, email, phone, wallet_amount FROM user WHERE id = ?"
+	SQL := "SELECT id, name, email, phone, wallet_amount, api_key FROM user WHERE id = ?"
 	rows, err := tx.QueryContext(ctx, SQL, userId)
 	if err != nil {
 		panic(err)
@@ -68,7 +70,7 @@ func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 
 	user := model.User{}
 	if rows.Next() {
-		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount)
+		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount, &user.ApiKey)
 		if err != nil {
 			panic(err)
 		}

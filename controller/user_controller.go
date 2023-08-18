@@ -6,6 +6,7 @@ import (
 	"github.com/agilistikmal/wallet-go/service"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -31,13 +32,23 @@ func (controller *UserControllerImpl) Create(w http.ResponseWriter, r *http.Requ
 	userCreateRequest := model.UserCreateRequest{}
 	helper.ReadFromRequest(r, &userCreateRequest)
 
-	userResponse := controller.UserService.Create(r.Context(), userCreateRequest)
-	webResponse := model.WebResponse{
-		Code:   http.StatusOK,
-		Status: http.StatusText(http.StatusOK),
-		Data:   userResponse,
-	}
+	secretKey := r.Header.Get("Secret-Key")
+	var webResponse model.WebResponse
 
+	if os.Getenv("SECRET_KEY") == secretKey {
+		userResponse := controller.UserService.Create(r.Context(), userCreateRequest)
+		webResponse = model.WebResponse{
+			Code:   http.StatusOK,
+			Status: http.StatusText(http.StatusOK),
+			Data:   userResponse,
+		}
+	} else {
+		webResponse = model.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: http.StatusText(http.StatusUnauthorized),
+			Data:   nil,
+		}
+	}
 	helper.WriteToResponse(w, webResponse)
 }
 
@@ -50,14 +61,27 @@ func (controller *UserControllerImpl) Update(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		panic(err)
 	}
-	userUpdateRequest.Id = uint(id)
-	userResponse := controller.UserService.Update(r.Context(), userUpdateRequest)
-	webResponse := model.WebResponse{
-		Code:   http.StatusOK,
-		Status: http.StatusText(http.StatusOK),
-		Data:   userResponse,
-	}
 
+	userUpdateRequest.Id = uint(id)
+	userResponse := controller.UserService.FindById(r.Context(), uint(id))
+	secretKey := r.Header.Get("Secret-Key")
+	apiKey := r.Header.Get("API-Key")
+	var webResponse model.WebResponse
+
+	if os.Getenv("SECRET_KEY") == secretKey || userResponse.ApiKey == apiKey {
+		userResponse = controller.UserService.Update(r.Context(), userUpdateRequest)
+		webResponse = model.WebResponse{
+			Code:   http.StatusOK,
+			Status: http.StatusText(http.StatusOK),
+			Data:   userResponse,
+		}
+	} else {
+		webResponse = model.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: http.StatusText(http.StatusUnauthorized),
+			Data:   nil,
+		}
+	}
 	helper.WriteToResponse(w, webResponse)
 }
 
@@ -67,13 +91,26 @@ func (controller *UserControllerImpl) Delete(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		panic(err)
 	}
-	controller.UserService.Delete(r.Context(), uint(id))
-	webResponse := model.WebResponse{
-		Code:   http.StatusOK,
-		Status: http.StatusText(http.StatusOK),
-		Data:   nil,
-	}
 
+	userResponse := controller.UserService.FindById(r.Context(), uint(id))
+	secretKey := r.Header.Get("Secret-Key")
+	apiKey := r.Header.Get("API-Key")
+	var webResponse model.WebResponse
+
+	if os.Getenv("SECRET_KEY") == secretKey || userResponse.ApiKey == apiKey {
+		controller.UserService.Delete(r.Context(), uint(id))
+		webResponse = model.WebResponse{
+			Code:   http.StatusOK,
+			Status: http.StatusText(http.StatusOK),
+			Data:   nil,
+		}
+	} else {
+		webResponse = model.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: http.StatusText(http.StatusUnauthorized),
+			Data:   nil,
+		}
+	}
 	helper.WriteToResponse(w, webResponse)
 }
 
@@ -83,23 +120,45 @@ func (controller *UserControllerImpl) FindById(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		panic(err)
 	}
-	userResponse := controller.UserService.FindById(r.Context(), uint(id))
-	webResponse := model.WebResponse{
-		Code:   http.StatusOK,
-		Status: http.StatusText(http.StatusOK),
-		Data:   userResponse,
-	}
 
+	userResponse := controller.UserService.FindById(r.Context(), uint(id))
+	secretKey := r.Header.Get("Secret-Key")
+	apiKey := r.Header.Get("API-Key")
+	var webResponse model.WebResponse
+
+	if os.Getenv("SECRET_KEY") == secretKey || userResponse.ApiKey == apiKey {
+		webResponse = model.WebResponse{
+			Code:   http.StatusOK,
+			Status: http.StatusText(http.StatusOK),
+			Data:   userResponse,
+		}
+	} else {
+		webResponse = model.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: http.StatusText(http.StatusUnauthorized),
+			Data:   nil,
+		}
+	}
 	helper.WriteToResponse(w, webResponse)
 }
 
 func (controller *UserControllerImpl) FindAll(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	userResponses := controller.UserService.FindAll(r.Context())
-	webResponse := model.WebResponse{
-		Code:   http.StatusOK,
-		Status: http.StatusText(http.StatusOK),
-		Data:   userResponses,
-	}
+	secretKey := r.Header.Get("Secret-Key")
+	var webResponse model.WebResponse
 
+	if os.Getenv("SECRET_KEY") == secretKey {
+		webResponse = model.WebResponse{
+			Code:   http.StatusOK,
+			Status: http.StatusText(http.StatusOK),
+			Data:   userResponses,
+		}
+	} else {
+		webResponse = model.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: http.StatusText(http.StatusUnauthorized),
+			Data:   nil,
+		}
+	}
 	helper.WriteToResponse(w, webResponse)
 }
