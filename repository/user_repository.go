@@ -32,11 +32,11 @@ func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, us
 	SQL := "INSERT INTO user(name, email, phone, password, api_key) VALUES (?, ? ,? ,?, ?)"
 	result, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, hashPassword, apiKey)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	user.Id = uint(id)
 	user.ApiKey = apiKey
@@ -47,7 +47,7 @@ func (repository *UserRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, us
 	SQL := "UPDATE user SET name = ?, email = ?, phone = ?, password = ? WHERE id = ?"
 	_, err := tx.Exec(SQL, user.Name, user.Email, user.Phone, user.Password, user.Id)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	return user
 }
@@ -56,7 +56,7 @@ func (repository *UserRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, us
 	SQL := "DELETE FROM user WHERE id = ?"
 	_, err := tx.Exec(SQL, user.Id)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 }
 
@@ -64,7 +64,7 @@ func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 	SQL := "SELECT id, name, email, phone, wallet_amount, api_key FROM user WHERE id = ?"
 	rows, err := tx.QueryContext(ctx, SQL, userId)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	defer rows.Close()
 
@@ -72,7 +72,7 @@ func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 	if rows.Next() {
 		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount, &user.ApiKey)
 		if err != nil {
-			panic(err)
+			panic(err.Error())
 		}
 		return user, nil
 	} else {
@@ -81,19 +81,19 @@ func (repository *UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 }
 
 func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) []model.User {
-	SQL := "SELECT id, name, email, phone, wallet_amount FROM user"
+	SQL := "SELECT id, name, email, phone, wallet_amount, api_key FROM user"
 	rows, err := tx.QueryContext(ctx, SQL)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	defer rows.Close()
 
 	var users []model.User
 	for rows.Next() {
 		user := model.User{}
-		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount)
+		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Phone, &user.WalletAmount, &user.ApiKey)
 		if err != nil {
-			panic(err)
+			panic(err.Error())
 		}
 		users = append(users, user)
 	}

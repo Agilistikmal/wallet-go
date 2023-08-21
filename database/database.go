@@ -2,11 +2,12 @@ package database
 
 import (
 	"database/sql"
+	"os"
 	"time"
 )
 
 func New() *sql.DB {
-	db, err := sql.Open("mysql", "root:rootpw@tcp(localhost:3306)/wallet")
+	db, err := sql.Open("mysql", os.Getenv("DB_CONNECTION_STRING"))
 	if err != nil {
 		panic(err)
 	}
